@@ -9,6 +9,7 @@ import Debug
 import Maybe
 import Http
 import Task
+import Task.Extra
 
 type alias Language =
     { name : String
@@ -141,17 +142,22 @@ addVersion : Language -> Task.Task Http.Error Language
 addVersion lang =
     Task.map (\v -> { lang | version <- Just v }) (getVersion lang)
 
-addVersions : List Language -> List (Task.Task Http.Error Language)
+addVersions : List Language -> Task.Task Http.Error (List Language)
 addVersions =
-    List.map addVersion
+    Task.Extra.optional << List.map addVersion
 
---port requests : Signal (Task.Task x ())
---port requests =
---    Signal.map addVersions defaultLanguages
+
+report : List Language -> Task.Task x ()
+report ls =
+    Signal.send languages.address ls
+
+port requests : Task.Task Http.Error ()
+port requests =
+    (addVersions defaultLanguages) `Task.andThen` report
 
 languages : Signal.Mailbox (List Language)
 languages =
-    Signal.mailbox defaultLanguages
+    Signal.mailbox []
 
 main : Signal H.Html
 main =
