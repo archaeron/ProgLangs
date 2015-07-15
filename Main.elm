@@ -10,6 +10,7 @@ import Maybe
 import Http
 import Task
 import Task.Extra
+import Decoder
 import Languages exposing (..)
 
 versions : String -> Task.Task Http.Error String
@@ -61,6 +62,10 @@ mainView languages =
 getVersion : Language -> Task.Task Http.Error String
 getVersion lang =
     Http.getString <| "https://api.github.com/repos/" ++ lang.url ++ "/git/refs/tags/"
+
+extractVersion : String -> Result String (List String)
+extractVersion =
+    Decoder.version
 
 addVersion : Language -> Task.Task Http.Error Language
 addVersion lang =
