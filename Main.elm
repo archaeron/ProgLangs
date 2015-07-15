@@ -81,7 +81,7 @@ port requests =
 
 languages : Signal.Mailbox (List Language)
 languages =
-    Signal.mailbox []
+    Signal.mailbox defaultLanguages
 
 main : Signal H.Html
 main =
