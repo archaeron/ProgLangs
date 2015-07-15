@@ -70,10 +70,9 @@ addVersions : List Language -> Task.Task Http.Error (List Language)
 addVersions =
     Task.Extra.optional << List.map addVersion
 
-
 report : List Language -> Task.Task x ()
-report ls =
-    Signal.send languages.address ls
+report =
+    Signal.send languages.address
 
 port requests : Task.Task Http.Error ()
 port requests =
