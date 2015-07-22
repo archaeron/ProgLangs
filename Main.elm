@@ -59,17 +59,15 @@ mainView languages =
         , viewLanguages languages
         ]
 
-getVersion : Language -> Task.Task Http.Error String
+getVersion : Language -> Task.Task Http.Error (Maybe String)
 getVersion lang =
-    Http.getString <| "https://api.github.com/repos/" ++ lang.url ++ "/git/refs/tags/"
-
-extractVersion : String -> Result String (List String)
-extractVersion =
-    Decoder.version
+    "https://api.github.com/repos/" ++ lang.url ++ "/git/refs/tags/"
+        |> Http.getString
+        |> Task.map Decoder.version
 
 addVersion : Language -> Task.Task Http.Error Language
 addVersion lang =
-    Task.map (\v -> { lang | version <- Just v }) (getVersion lang)
+    Task.map (\v -> { lang | version <- v }) (getVersion lang)
 
 addVersions : List Language -> Task.Task Http.Error (List Language)
 addVersions =
