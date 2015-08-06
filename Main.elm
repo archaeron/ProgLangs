@@ -29,17 +29,50 @@ viewVersion v =
         Nothing ->
             H.span [] [ H.text "no version found" ]
         Just version ->
-            H.span [] [ H.text version ]
+            H.span []
+                [ H.text version ]
+
+viewDocumentation : Maybe String -> H.Html
+viewDocumentation url =
+    case url of
+        Nothing ->
+            H.div [] [ H.text "no documentation" ]
+        Just u ->
+            H.div []
+                [ H.a
+                   [ A.href u ]
+                   [ H.text "Documentation" ]
+                ]
+
+viewApi : Maybe String -> H.Html
+viewApi url =
+    case url of
+        Nothing ->
+            H.div [] [ H.text "no API" ]
+        Just u ->
+            H.div []
+                [ H.a
+                   [ A.href u ]
+                   [ H.text "API" ]
+                ]
+
+viewLanguageName : String -> String -> H.Html
+viewLanguageName name webpage =
+    H.a
+       [ A.href webpage ]
+       [ H.h2 [ ] [ H.text name ] ]
 
 viewLanguage : Language -> H.Html
 viewLanguage language =
     H.li [ ]
-        [ H.h2 [ ] [ H.text language.name ]
+        [ viewLanguageName language.name language.webpage
         , H.img [ A.src ("logos/" ++ language.logo), logoStyle ] []
+        , viewDocumentation language.documentationUrl
+        , viewApi language.apiUrl
         , H.div [ ] [ ]
         , H.a
-            [ A.href <| githubLink language.url ]
-            [ H.text language.url ]
+            [ A.href <| githubLink language.githubUrl ]
+            [ H.text language.githubUrl ]
         , H.div
             []
             [ viewVersion language.version
@@ -59,15 +92,15 @@ mainView languages =
         , viewLanguages languages
         ]
 
-getVersion : Language -> Task.Task Http.Error (Maybe String)
-getVersion lang =
-    "https://api.github.com/repos/" ++ lang.url ++ "/git/refs/tags/"
+getVersion : String -> Task.Task Http.Error (Maybe String)
+getVersion url =
+    "https://api.github.com/repos/" ++ url ++ "/git/refs/tags/"
         |> Http.getString
         |> Task.map Decoder.version
 
 addVersion : Language -> Task.Task Http.Error Language
 addVersion lang =
-    Task.map (\v -> { lang | version <- v }) (getVersion lang)
+    Task.map (\v -> { lang | version <- v }) (getVersion lang.githubUrl)
 
 addVersions : List Language -> Task.Task Http.Error (List Language)
 addVersions =
